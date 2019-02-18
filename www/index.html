@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title> Crypto Depth</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+  </head>
+  <body>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.standalone.min.css"></script>
+
+    <div class="custom-control custom-switch">
+      <input type="checkbox" class="custom-control-input" id="historical">
+      </script>
+      <label class="custom-control-label" for="historical">Auto Update</label>
+    </div>
+    <div class="plots">
+      <div id="LeftPlot" style="height: 40%; margin-left: 5%; width: 40%;display: inline-block;"></div>
+      <div id="RightPlot" style="height: 40%; margin-left: 5%; width: 40%;display: inline-block;"></div>
+    </div>
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
+
+
+
+    <script src="canvas.js"></script>
+    <script language="javascript"> RealTime(); </script>
+
+    <div class="fixed-bottom" display: inline-block;>
+        <form role="form">
+            <div class="row">
+                <div class="form-group col-lg-3">
+                    <input type="text" class="form-control" placeholder="Market" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class='col-sm-6'>
+                    <input type='text' class="form-control" id='datetimepicker4' />
+                </div>
+                <script type="text/javascript">
+                    $(function () {
+                        $('#datetimepicker4').datetimepicker();
+                    });
+                </script>
+            </div>
+            <div class="row">
+                <div class="form-group col-lg-3 ">
+                    <input type="text" class="form-control input-normal" placeholder="Start Time"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-lg-3 ">
+                    <input type="text" class="form-control input-normal" placeholder="End Time"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-lg-3 ">
+                    <input type="text" class="form-control input-normal" placeholder="Percentage Threshold"/>
+                </div>
+            </div>
+            <div class="row">
+                <button type="submit" class="btn btn-default">Plot</button>
+            </div>
+        </form>
+    </div>
+  </body>
+</html>
