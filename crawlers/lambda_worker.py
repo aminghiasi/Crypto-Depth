@@ -15,7 +15,9 @@ Gets market depth from 10 markets simultaneously using multithreading
 try:
     kinesis_client = boto3.client('kinesis', region_name=config.region_name)
 except Exception as e:
-    logging.error(json.dumps({'incident': 'Can not connect to Kinesis', 'error': str(e)}))
+    logging.error(json.dumps({'incident': 'Can not connect to Kinesis',
+                              'error': str(e)}))
+    exit()
 
 
 def calculate_middle_price(orders):
@@ -54,13 +56,14 @@ def symmetrize_market_depth(orders):
     middle_price = calculate_middle_price(orders)
 
     payload = {'orders': {}}
-    max_bid_percentage = 0
-    max_ask_percentage = 0
+    max_bid_percentage = 0.
+    max_ask_percentage = 0.
     for order in itertools.chain(orders['bids'], orders['asks']):
         is_ask = (float(order[0]) > middle_price)
 
         # Bin market depth in increments of config.market_depth_increment
-        relative_price_percent = int(100. / config.market_depth_increment * (float(order[0]) - middle_price)/middle_price)
+        relative_price_percent = int(100. / config.market_depth_increment *
+                                     (float(order[0]) - middle_price)/middle_price)
         relative_price_percent = float(relative_price_percent)*config.market_depth_increment
         relative_price_percent += config.market_depth_increment * (2 * is_ask - 1)
 
@@ -81,11 +84,12 @@ def symmetrize_market_depth(orders):
 
     for relative_price_percent, amount in payload['orders'].items():
         is_ask = (relative_price_percent > 0)
-        # Doing two things:
-        # 1- Truncating the more extended side
-        # 2- Accumulatively adding orders
+        # Truncating the more extended side
+        if abs(relative_price_percent) > min_max_percentage:
+            continue
         percent = relative_price_percent
-        while abs(percent) <= min_max_percentage:
+        # Accumulating orders
+        while abs(percent) <= config.market_depth_max_percentage:
             # increment up if ask and increment down if bid
             symmetrical_payload['orders']['%.2f' % percent] = symmetrical_payload['orders'].get('%.2f' % percent, 0.) + amount
             percent += config.market_depth_increment * (2 * is_ask - 1)
@@ -94,16 +98,12 @@ def symmetrize_market_depth(orders):
 
 def fetch_orders(exchange, symbol):
     """
-    This function gets the market depth of a single market from its API
-    and sends the result to AWS Kenises in config.market_depth_increment granularity.
-
-    :param exchange: Name of exchange
-    :param symbol: Name of symbol
+    This function gets the market depth of a single market from its API and
+    sends the result to AWS Kenises in config.market_depth_increment granularity.
     """
     try:
-        exchange_fn = getattr(ccxt, exchange)
-        exchange_client = exchange_fn()
-        exchange_client.load_markets()  # Loading the market
+        exchange_client = getattr(ccxt, exchange)()
+        exchange_client.load_markets()  # Loading the markets
         # Binance gives an error if the number of requested
         # orders is more than 1000
         if exchange == 'binance':
@@ -121,6 +121,7 @@ def fetch_orders(exchange, symbol):
     else:
         if 'bids' in orders and 'asks' in orders and orders['bids'] and orders['asks']:
             payload = symmetrize_market_depth(orders)
+            print(payload)
             send_to_klinesis(payload, exchange, symbol)
 
 
@@ -149,4 +150,4 @@ def lambda_handler(event, context):
 
 if __name__ == '__main__':
     # Debug statement for devs
-    lambda_handler({'bitfinex': 'BTC/USD'}, '')
+    lambda_handler({'bitlish': 'BTC/USD'}, '')

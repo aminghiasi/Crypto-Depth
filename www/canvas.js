@@ -1,5 +1,9 @@
-function plot_marketdepth (query, CanvasName) {
-  fetch('https://cors-anywhere.herokuapp.com/https://cqt23i4kek.execute-api.us-east-1.amazonaws.com/v1/r1?output=marketdepth' + query, {
+var queryPlotPressure = '&realtime=true'
+var queryMarketDepth = '&realtime=true'
+
+function PlotMarketdepth (query, CanvasName) {
+  // This function gets the data from the API and draws the MarketDepth plot
+  fetch('https://cors-anywhere.herokuapp.com/https://cqt23i4kek.execute-api.us-east-1.amazonaws.com/v1/r1?type=marketdepth' + query, {
     method: 'GET',
     mode: 'cors',
     cache: 'no-cache',
@@ -12,26 +16,24 @@ function plot_marketdepth (query, CanvasName) {
         var AsksDataPoints = []
         var BidsTotal = 0.0
         var AsksTotal = 0.0
-        for (var i = 0.0; i < 20.0; i += 0.2) {
+        // Putting data in arrays to be plotted
+        for (var i = 0.5; i < 20.0; i += 0.5) {
           if (i.toFixed(2) in data.orders) {
-            AsksTotal += parseFloat(data.orders[i.toFixed(2)])
+            AsksDataPoints.push({ x: i, y: parseFloat(data.orders[i.toFixed(2)]) / 1000000 })
           }
           if ((-i).toFixed(2) in data.orders) {
-            BidsTotal += parseFloat(data.orders[(-i).toFixed(2)])
+            BidsDataPoints.push({ x: -i, y: parseFloat(data.orders[(-i).toFixed(2)]) / 1000000 })
           }
-          if (i === 0.0) { i = 0.001 }
-          AsksDataPoints.push({ x: i, y: AsksTotal })
-          BidsDataPoints.push({ x: -i, y: BidsTotal })
         }
+        // Plotting
         var chart = new CanvasJS.Chart(CanvasName, {
-          animationEnabled: true,
+          animationEnabled: false,
           title: {
             text: 'Crypto Market Depth'
           },
           axisY: {
-            title: 'US Dollar',
-            valueFormatString: '#0,.',
-            suffix: 'k'
+            title: 'USD',
+            suffix: ' M'
           },
           axisX: {
             title: 'Order price relative to coin price (%)'
@@ -42,14 +44,16 @@ function plot_marketdepth (query, CanvasName) {
           data: [{
             type: 'stackedArea',
             showInLegend: true,
-            toolTipContent: '<span style="color:#3CB371"><strong>{name}: </strong></span> {y}',
+            yValueFormatString: "$####### M",
+            color: "rgba(255, 0, 0, 1)",
             name: 'Asks',
             dataPoints: AsksDataPoints
           },
           {
             type: 'stackedArea',
             name: 'Bids',
-            toolTipContent: '<span style="color:#4F81BC"><strong>{name}: </strong></span> {y}<br><b>Total:<b> #total',
+            yValueFormatString: "$####### M",
+            color: "rgba(60,179,113, 1)",
             showInLegend: true,
             dataPoints: BidsDataPoints
           }]
@@ -60,8 +64,14 @@ function plot_marketdepth (query, CanvasName) {
     )
 }
 
-function plot_pressure (query, CanvasName) {
-  fetch('https://cors-anywhere.herokuapp.com/https://cqt23i4kek.execute-api.us-east-1.amazonaws.com/v1/r1?output=mdr' + query, {
+
+function CalculateMDR (BuyPressure, SellPressure) {
+  return (100 * (BuyPressure - SellPressure) / (BuyPressure + SellPressure))
+}
+
+function PlotPressure (query, CanvasName) {
+  // This function gets the data from the API and draws the Buy/Sell Pressure and MDR plots
+  fetch('https://cors-anywhere.herokuapp.com/https://cqt23i4kek.execute-api.us-east-1.amazonaws.com/v1/r1?type=mdr' + query, {
     method: 'GET',
     mode: 'cors',
     cache: 'no-cache',
@@ -72,13 +82,22 @@ function plot_pressure (query, CanvasName) {
       if (data != null) {
         var BuyPressure = []
         var SellPressure = []
+        var MDR = []
+        // Putting data in arrays to be plotted
         for (var key in data) {
           var date = key.split(' ')
-          BuyPressure.push({ x: new Date(date[0] + 'T' + date[1] + ':00Z'), y: parseFloat(data[key]['Buy Pressure']) })
-          SellPressure.push({ x: new Date(date[0] + 'T' + date[1] + ':00Z'), y: parseFloat(data[key]['Sell Pressure']) })
+          BuyPressure.push({ x: new Date(date[0] + 'T' + date[1] + ':00Z'), y: parseFloat(data[key]['Buy Pressure']) / 1000000 })
+          SellPressure.push({ x: new Date(date[0] + 'T' + date[1] + ':00Z'), y: parseFloat(data[key]['Sell Pressure']) / 1000000 })
+          MDR.push({ x: new Date(date[0] + 'T' + date[1] + ':00Z'),
+            y: CalculateMDR(
+              parseFloat(data[key]['Buy Pressure']) / 1000000,
+              parseFloat(data[key]['Sell Pressure']) / 1000000
+            )
+          })
         }
+        // Plotting
         var chart = new CanvasJS.Chart(CanvasName, {
-          animationEnabled: true,
+          animationEnabled: false,
           title: {
             text: 'Buy/Sell Pressure'
           },
@@ -88,7 +107,7 @@ function plot_pressure (query, CanvasName) {
           axisY: {
             title: 'USD',
             includeZero: true,
-            suffix: ' USD'
+            suffix: ' M'
           },
           toolTip: {
             shared: true
@@ -96,16 +115,45 @@ function plot_pressure (query, CanvasName) {
           data: [{
             name: 'Buy Pressure',
             type: 'spline',
-            yValueFormatString: "$#######.00",
+            yValueFormatString: "$####### M",
             showInLegend: true,
+            color: "rgba(60,179,113, 1)",
             dataPoints: BuyPressure
           },
           {
             name: 'Sell Pressure',
             type: 'spline',
-            yValueFormatString: "$#######.00",
+            yValueFormatString: "$####### M",
             showInLegend: true,
+            color: "rgba(255,0,0, 1)",
             dataPoints: SellPressure
+          }]
+        })
+
+        chart.render()
+        console.log(MDR)
+        var chart = new CanvasJS.Chart('BottomPlot', {
+          animationEnabled: false,
+          title: {
+            text: 'Market Depth Ratio'
+          },
+          axisX: {
+            valueFormatString: 'HH:mm'
+          },
+          axisY: {
+            title: 'Percent',
+            includeZero: true,
+            suffix: ''
+          },
+          toolTip: {
+            shared: true
+          },
+          data: [{
+            name: 'MDR',
+            type: 'spline',
+            showInLegend: true,
+            color: 'rgba(0,0,0, 1)',
+            dataPoints: MDR
           }]
         })
 
@@ -115,27 +163,44 @@ function plot_pressure (query, CanvasName) {
     )
 }
 
-function historical () {
-  plot_marketdepth('&coin=BTC&exchange=bitfinex&start_time=2019-02-06%2004:58&end_time=2019-02-06%2004:58', 'RightPlot')
+function AutoUpdate () {
+  PlotPressure(queryPlotPressure, 'LeftPlot')
+  PlotMarketdepth(queryMarketDepth, 'RightPlot')
 }
 
-function RealTime () {
-  plot_pressure('&realtime=true', 'LeftPlot')
-  plot_marketdepth('&realtime=true', 'RightPlot')
-}
+window.setInterval(function () {
+  // Redraw the plots every 60 seconds
+  if ($('#customSwitch1').is(':checked')) {
+    AutoUpdate()
+  }
+}, 60000);
 
-$('#historical').change(function () {
-  if ($('#historical').is(':checked')) { historical() }
-  else { RealTime() }
-}
-)
 
 $('#plot').on('click', function () {
-  var query = '&realtime=false'
-  if (document.getElementById('market').value !== '') query += '&market=' + document.getElementById('market').value
-  if (document.getElementById('exchange').value !== '') query += '&exchange=' + document.getElementById('exchange').value
-  if (document.getElementById('datetimepicker_start').value !== '') query += '&start_time=' + document.getElementById('datetimepicker_start').value
-  if (document.getElementById('datetimepicker_end').value !== '') query += '&end_time=' + document.getElementById('datetimepicker_end').value
-  if (document.getElementById('percentage').value !== '') query += '&percent=' + document.getElementById('percentage').value
-  plot_pressure(query, 'LeftPlot')
+  // This function reads the text from forms and translates it to query
+  var date
+  queryPlotPressure = ''
+  if (document.getElementById('coin').value !== '') queryPlotPressure += '&coin=' + document.getElementById('coin').value.toUpperCase()
+  if (document.getElementById('exchange').value !== '') queryPlotPressure += '&exchange=' + document.getElementById('exchange').value
+  if (document.getElementById('percentage').value !== '') queryPlotPressure += '&percent=' + document.getElementById('percentage').value
+  queryMarketDepth = queryPlotPressure
+  if (document.getElementById('datetimepicker_start').value !== '') {
+    date = new Date(document.getElementById('datetimepicker_start').value.replace(' ', 'T'))
+    queryPlotPressure += '&start_time=' + moment.utc(date).format('YYYY-MM-DD HH:mm')
+  }
+  if (document.getElementById('datetimepicker_end').value !== '') {
+    date = new Date(document.getElementById('datetimepicker_end').value.replace(' ', 'T'))
+    queryPlotPressure += '&end_time=' + moment.utc(date).format('YYYY-MM-DD HH:mm')
+    queryPlotPressure += '&realtime=false'
+    queryMarketDepth += '&start_time=' + moment.utc(date - 300000).format('YYYY-MM-DD HH:mm')
+    queryMarketDepth += '&end_time=' + moment.utc(date).format('YYYY-MM-DD HH:mm')
+    queryMarketDepth += '&realtime=false'
+  }
+  else {
+    queryPlotPressure += '&realtime=true'
+    queryMarketDepth += '&realtime=true'
+  }
+  console.log(queryPlotPressure)
+  console.log(queryMarketDepth)
+  AutoUpdate()
 })

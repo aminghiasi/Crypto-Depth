@@ -4,7 +4,8 @@ import json
 import logging
 
 """
-Distributes the markets among other lambda functions to the market depth
+Reads markets' details from markets.txt and distributes them among other lambda
+functions to get the market depth from their APIs
 """
 
 
@@ -24,7 +25,7 @@ def lambda_handler(event='', context=''):
     try:
         # File "BTC_markets.txt" contains all market info
         # in 'exchange coin' format
-        market_names = open('BTC_markets.txt', 'r').read().split('\n')
+        market_names = open('markets.txt', 'r').read().split('\n')
     except Exception as e:
         logging.error(e)
         # If not possible to open the file containing market details,

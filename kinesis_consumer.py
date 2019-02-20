@@ -17,7 +17,7 @@ try:
 
     # Connecting to DynamoDB
     dynamodb = boto3.resource('dynamodb', region_name=config.region_name)
-    table = dynamodb.Table('crypto_market_depth')
+    table = dynamodb.Table(config.dynamodb_table_name)
 
     # Connecting to Kinesis
     kinesis_client = boto3.client('kinesis', region_name=config.region_name)
