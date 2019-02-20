@@ -18,7 +18,7 @@ try:
 
     # Connecting to DynamoDB
     dynamodb = boto3.resource('dynamodb', region_name=config.region_name)
-    table = dynamodb.Table(config.dynamodb_table_name)
+    table = dynamodb.Table('crypto_market_depth')
 
 except Exception as e:
     logging.error(json.dumps({'incident': 'Failed to connect to an AWS tool', 'error': str(e)}))
