@@ -1,8 +1,7 @@
 Crypto-Depth is a real-time pipeline that aggregates markets depth for 5000+ crypto markets.
 
 # Overview
-Traders constantly put asks and bids on a crypto coin. The Market Depth plot shows the collective asks and bids on a coin and can be used as a measure of market sentiment. For instance, if there is a market depth imbalance, e.g. many more bids than asks, that shows that traders are interest in that coin.
-<p align="center">
+Traders constantly put asks and bids on a crypto coin. The Market Depth plot shows the collective asks and bids on a coin and can be used as a measure of market sentiment. For instance, if there is a market depth imbalance, e.g. many more bids than asks, that shows that traders are interest in that coin. <p align="center">
 <img width="700" alt="screen shot 2019-02-23 at 7 37 38 pm" src="https://user-images.githubusercontent.com/12805440/53293484-7e9da100-37a2-11e9-9138-de77d4ba1732.png">
 </p>
 
@@ -40,29 +39,24 @@ Then put your access keys for coinmarketcap and currencylayer APIs in credential
 # Getting Started
 Open the website at http://coinmarketdepth.live/. Everything  auto-updates every minute. You can see three plots: crypto market depth plot, Buy/Sell pressure and Market Depth Ratio plots. crypto market depth plot is explained above. 
 
-The buy/sell pressure is the amount of all asks/bids in the market over time. If you apply a percentage threshold of 5%, the website will only sum all orders within 5% of the price of each coin. 
+The buy/sell pressure is the amount of all asks/bids in the market over time. If you apply a percentage threshold of 5%, the website will only sum all orders within 5% of the price of each coin. <p align="center">
+<img width="786" alt="screen shot 2019-02-23 at 8 31 03 pm" src="https://user-images.githubusercontent.com/12805440/53293850-f6bb9500-37a9-11e9-8abe-b25b7840d47a.png">
 
-
-<p align="center">
-<img width=“700” alt="screen shot 2019-02-23 at 7 38 44 pm" src="https://user-images.githubusercontent.com/12805440/53293495-c9b7b400-37a2-11e9-8e42-420ed7f7d324.png">
 </p>
 
 This plot shows the ratio of buy pressure to sell pressure over time. Market Depth Ratio is defined as:
 
-MDR = (buy pressure - sell pressure) / (buy pressure + sell pressure)
-
-
-<p align="center">
-<img width=“700” alt="screen shot 2019-02-23 at 7 40 48 pm" src="https://user-images.githubusercontent.com/12805440/53293505-f2d84480-37a2-11e9-8031-e485f96bdd9b.png">
+MDR = (buy pressure - sell pressure) / (buy pressure + sell pressure)<p align="center">
+<img width="823" alt="screen shot 2019-02-23 at 8 29 47 pm" src="https://user-images.githubusercontent.com/12805440/53293839-ca077d80-37a9-11e9-975c-f0f8026a652a.png">
 </p>
 
 
 
 
 # API
-You can access the API at https://cqt23i4kek.execute-api.us-east-1.amazonaws.com/v1/r1 and can pass these parameters:
-
-<img width="600" alt="screen shot 2019-02-23 at 7 34 44 pm" src="https://user-images.githubusercontent.com/12805440/53293466-1a7add00-37a2-11e9-9992-7f7c9f086fed.png">
+You can access the API at https://cqt23i4kek.execute-api.us-east-1.amazonaws.com/v1/r1 and can pass these parameters:<p align="center">
+<img width=“600” alt="screen shot 2019-02-23 at 8 28 03 pm" src="https://user-images.githubusercontent.com/12805440/53293828-8b71c300-37a9-11e9-8c4b-814c4ad62a96.png">
+</p>
 
 
 # Credits
