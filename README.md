@@ -1,47 +1,61 @@
-This repository contains my project at Insight Data Engineering program in New York in Winter 2019. It consists of an API and a website that monitor crypto market depth in real time.
+Crypto-Depth is a real-time pipeline that aggregates markets depth for 5000+ crypto markets.
 
-# Introduction
-## Market Depth
-Traders constantly put bids and asks in the market. Market Depth plot shows the collective asks and bids in all crypto markets and can be used as a measure of market sentiment. For instance, if there is market depth imbalance, e.g. many more bids than asks, that shows the interest of traders in that coin. 
+# Overview
+Traders constantly put asks and bids on a crypto coin. The Market Depth plot shows the collective asks and bids on a coin and can be used as a measure of market sentiment. For instance, if there is a market depth imbalance, e.g. many more bids than asks, that shows that traders are interest in that coin.
 
-<img width="735" alt="screen shot 2019-02-20 at 9 38 18 pm" src="https://user-images.githubusercontent.com/12805440/53139531-e7450d80-3557-11e9-84c3-5afd89fce136.png">
-
-This project aggregates asks and bids from more than 5000 markets and make it available for the user through the API or the website. Using this data, traders can find market depth imbalances and take advantage of them.
+<img width="960" alt="screen shot 2019-02-23 at 7 37 38 pm" src="https://user-images.githubusercontent.com/12805440/53293484-7e9da100-37a2-11e9-9138-de77d4ba1732.png">
 
 
+Crypto-Depth is a server-less platform that provides traders market depth data using AWS Lambda, Kinesis, DynamoDB, and API Gateway. It features:
+* A dashboard to analyze market depth for crypto
+* Monitoring of 5000+ crypto markets
+* A real-time and historical api for trading bots
 
-# Pipeline
+This repository has what you need to stand up your own version of Crypro-Depth in your own AWS projects.
 
-<img width="1132" alt="screen shot 2019-02-20 at 9 29 21 pm" src="https://user-images.githubusercontent.com/12805440/53139131-a4366a80-3556-11e9-8450-31babca59c42.png">
+[Slide Deck](https://docs.google.com/presentation/d/14pjAVgnJGYHm2wY2WbIjx3lpbVU8mi2FC4btlx4BGwU/edit#slide=id.g4f463f984c_2_0)
 
-# Try it out
-## Website
+<img width="1132" alt="screen shot 2019-02-23 at 7 09 08 pm" src="https://user-images.githubusercontent.com/12805440/53293442-b3f5bf00-37a1-11e9-8c38-798be6115b1a.png">
+
+
+# Requirments
+* AWS Account and Python 3.7
+* [CoinMarketCap](https://coinmarketcap.com/api/) API Key
+* [Currencylayer](https://currencylayer.com) API Key
+
+# Installation
+```bash
+git clone https://github.com/aminghiasi/Crypto-Depth.git
+```
+Add Redis Endpoint, DynamoDB table name, ARN for Steward and Worker lambda functions, Kinesis stream name, and region name to config.py
+Then put your access keys for coinmarketcap and currencylayer APIs in credentials.py and do:
+```bash
+. ./deployment/deploy.sh
+. ./deployment/run.sh
+```
+
+# Getting Started
 Open the website at http://coinmarketdepth.live/. In addition to the crypto market depth plot, you can see two more plots that auto update every minute: Buy/Sell pressure and Market Depth Ratio plots:
-<img width="768" alt="screen shot 2019-02-20 at 9 38 02 pm" src="https://user-images.githubusercontent.com/12805440/53139543-eca25800-3557-11e9-874d-01b5d7fc7d0e.png">
+<img width="886" alt="screen shot 2019-02-23 at 7 38 44 pm" src="https://user-images.githubusercontent.com/12805440/53293495-c9b7b400-37a2-11e9-8e42-420ed7f7d324.png">
+
+
 
 The buy/sell pressure is the amount of all asks/bids in the market. If you apply a percentage threshold of 5%, the website will only sum all orders within 5% of the price of each coin. 
-<img width="739" alt="screen shot 2019-02-20 at 9 38 10 pm" src="https://user-images.githubusercontent.com/12805440/53139537-ea3ffe00-3557-11e9-95c6-b8b2cba8c7b2.png">
+
+<img width="952" alt="screen shot 2019-02-23 at 7 40 48 pm" src="https://user-images.githubusercontent.com/12805440/53293505-f2d84480-37a2-11e9-8031-e485f96bdd9b.png">
+
 
 This plot shows the ratio of buy pressure to sell pressure over time. Market Depth Ratio is defined as:
 
 MDR = (buy pressure - sell pressure) / (buy pressure + sell pressure)
-## API
+
+
+# Documention
 You can access the API at https://cqt23i4kek.execute-api.us-east-1.amazonaws.com/v1/r1 and can pass these parameters:
-realtime: true or false, default: true
 
-type: marketdepth or mar, no default - mandatory parameter
+<img width="868" alt="screen shot 2019-02-23 at 7 34 44 pm" src="https://user-images.githubusercontent.com/12805440/53293466-1a7add00-37a2-11e9-9992-7f7c9f086fed.png">
 
- percent: Percentage threshold to be considered when calculating buy/sell pressure. Default: 20
-start_time: 
 
-end_time: 
+# Credits
+Crypto-Depth was made as a project at Insight Data Engineering by Amin Ghiasi in the Winter 2019 NY session. It is available as open source for anyone to use and modify.
 
-coin
-
-Exchange       
-
-                                             
-# How to run the code
-Add Redis Endpoint, DynamoDB table name, ARN for Steward and Worker lambda functions, Kinesis stream name, and region name to config.py
-Then put your access keys for coinmarketcap and currencylayer APIs in credentials.py
-run deployment/deploy.sh in a terminal. Then run deployment/start.sh
