@@ -44,7 +44,7 @@ def find_buy_and_sell_pressures(item, percent_given_by_user):
     return buy_pressure, sell_pressure
 
 
-def mdr(input, primary_key):
+def mdr_over_time(input, primary_key):
     """
     Returns MDR, Buy Pressure, and Sell Pressure over the duration specified by the users.
     """
@@ -130,6 +130,11 @@ def realtime(input, primary_key):
 
 
 def validate_input(input):
+
+    # lowercase all inputs
+    for i in input:
+        input[i.lower()] = input[i]
+
     if 'type' not in input:
         return True, ('400: Bad Request. Can not recognize the plot type you want to get.', input)
     if 'start_time' in input and 'end_time' in input and input['start_time'] > input['end_time']:
@@ -168,21 +173,21 @@ def lambda_handler(event, context):
         if 'exchange' in input:
             primary_key = input['exchange'] + ';' + input['coin']
 
-    if input['realtime'] == 'true' and 'exchange' not in input and input['type'] == 'mdr':
+    if input['realtime'] == 'true' and 'exchange' not in input and input['type'] == 'mdr_over_time':
         if 'start_time' in input and (datetime.utcnow() - datetime.strptime(input['start_time'], "%Y-%m-%d %H:%M")).total_seconds() > 48 * 60 * 60:
             return('400: Bad Request. Real-time mode cannot go back more than two days.')
         return(realtime(input, primary_key))
     # Get data from dynamo based on plot type
-    if input['type'] == 'marketdepth':
+    if input['type'] == 'mdr':
         if input['realtime'] == 'true':
             input['end_time'] = (datetime.utcnow() - timedelta(minutes=1)).strftime("%Y-%m-%d %H:%M")
             input['start_time'] = (datetime.utcnow() - timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M")
         return(market_depth(input, primary_key))
-    elif input['type'] == 'mdr':
+    elif input['type'] == 'mdr_over_time':
         if input['realtime'] == 'true':
             input['end_time'] = (datetime.utcnow() - timedelta(minutes=1)).strftime("%Y-%m-%d %H:%M")
             input['start_time'] = (datetime.utcnow() - timedelta(minutes=1440)).strftime("%Y-%m-%d %H:%M")
-        return(mdr(input, primary_key))
+        return(mdr_over_time(input, primary_key))
     else:
         return(input)
 
@@ -190,7 +195,7 @@ def lambda_handler(event, context):
 if __name__ == '__main__':
     # Debug statement for devs
     print(lambda_handler({'params': {'querystring': {'realtime': 'true',
-                                                     'type': 'marketdepth',
+                                                     'type': 'mdr',
                                                      'percent': '20',
                                                      'start_time': '2019-02-12 23:23',
                                                      'end_time': '2019-02-12 23:29'

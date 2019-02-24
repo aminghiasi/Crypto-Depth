@@ -3,7 +3,7 @@ var queryMarketDepth = '&realtime=true'
 
 function PlotMarketdepth (query, CanvasName) {
   // This function gets the data from the API and draws the MarketDepth plot
-  fetch('https://cors-anywhere.herokuapp.com/https://cqt23i4kek.execute-api.us-east-1.amazonaws.com/v1/r1?type=marketdepth' + query, {
+  fetch('https://cors-anywhere.herokuapp.com/https://cqt23i4kek.execute-api.us-east-1.amazonaws.com/v1/r1?type=mdr' + query, {
     method: 'GET',
     mode: 'cors',
     cache: 'no-cache',
@@ -71,7 +71,7 @@ function CalculateMDR (BuyPressure, SellPressure) {
 
 function PlotPressure (query, CanvasName) {
   // This function gets the data from the API and draws the Buy/Sell Pressure and MDR plots
-  fetch('https://cors-anywhere.herokuapp.com/https://cqt23i4kek.execute-api.us-east-1.amazonaws.com/v1/r1?type=mdr' + query, {
+  fetch('https://cors-anywhere.herokuapp.com/https://cqt23i4kek.execute-api.us-east-1.amazonaws.com/v1/r1?type=mdr_over_time' + query, {
     method: 'GET',
     mode: 'cors',
     cache: 'no-cache',
@@ -131,7 +131,6 @@ function PlotPressure (query, CanvasName) {
         })
 
         chart.render()
-        console.log(MDR)
         var chart = new CanvasJS.Chart('BottomPlot', {
           animationEnabled: false,
           title: {
@@ -200,7 +199,5 @@ $('#plot').on('click', function () {
     queryPlotPressure += '&realtime=true'
     queryMarketDepth += '&realtime=true'
   }
-  console.log(queryPlotPressure)
-  console.log(queryMarketDepth)
   AutoUpdate()
 })
