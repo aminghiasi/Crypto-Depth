@@ -1,3 +1,4 @@
+
 import ast
 import boto3
 import config
@@ -19,18 +20,6 @@ try:
     dynamodb = boto3.resource('dynamodb', region_name=config.region_name)
     table = dynamodb.Table('crypto_market_depth')
 
-    # Connecting to Kinesis
-    kinesis_client = boto3.client('kinesis', region_name=config.region_name)
-    response = kinesis_client.describe_stream(StreamName=config.kinesis_stream_name)
-    my_shard_id = response['StreamDescription']['Shards'][0]['ShardId']
-    shard_iterator = kinesis_client.get_shard_iterator(StreamName=config.kinesis_stream_name,
-                                                       ShardId=my_shard_id,
-                                                       ShardIteratorType='LATEST'
-                                                       )
-
-    my_shard_iterator = shard_iterator['ShardIterator']
-    record_response = kinesis_client.get_records(ShardIterator=my_shard_iterator,
-                                                 Limit=10000)
 except Exception as e:
     logging.error(json.dumps({'incident': 'Failed to connect to an AWS tool', 'error': str(e)}))
     exit(1)
@@ -50,7 +39,7 @@ def find_exchange_rate(currency):
         return None
 
 
-def write_to_DynamoDB(data):
+def write_to_DynamoDB_and_Redis(data):
 
     exchange_rate = find_exchange_rate(data['symbol'].split('/')[1])
     if not exchange_rate:
@@ -79,32 +68,50 @@ def write_to_DynamoDB(data):
     )
 
 
+def process_data(kinesis_client, NextShardIterator):
+    record_response = kinesis_client.get_records(ShardIterator=NextShardIterator,
+                                                 Limit=10000)
+    jobs = []
+    count = 0
+    for rec in record_response['Records']:
+        data = ast.literal_eval(rec['Data'].decode("utf-8"))
+        job = Process(target=write_to_DynamoDB_and_Redis, args=(data,))
+        job.start()
+        jobs.append(job)
+        count += 1
+        if count > 19:
+            for j in jobs:
+                j.join()
+            count = 0
+            jobs = []
+
+    for j in jobs:
+        j.join()
+    return record_response['NextShardIterator'], ('Data' not in record_response['Records'])
+
+
 if __name__ == '__main__':
     """
     Kinesis consumer. Writes the stream into dynamodb and redis
     """
 
+    # Connecting to Kinesis
+    kinesis_client = boto3.client('kinesis', region_name=config.region_name)
+    response = kinesis_client.describe_stream(StreamName=config.kinesis_stream_name)
+    my_shard_id = response['StreamDescription']['Shards'][0]['ShardId']
+    shard_iterator = kinesis_client.get_shard_iterator(StreamName=config.kinesis_stream_name,
+                                                       ShardId=my_shard_id,
+                                                       ShardIteratorType='LATEST'
+                                                       )
+
+    my_shard_iterator = shard_iterator['ShardIterator']
+    record_response = kinesis_client.get_records(ShardIterator=my_shard_iterator,
+                                                 Limit=10000)
+    NextShardIterator = record_response['NextShardIterator']
+
     # Do until no stream
     while 'NextShardIterator' in record_response:
         # Get a batch of records
-        record_response = kinesis_client.get_records(ShardIterator=record_response['NextShardIterator'],
-                                                     Limit=10000)
-        jobs = []
-        count = 0
-        for rec in record_response['Records']:
-            data = ast.literal_eval(rec['Data'].decode("utf-8"))
-            job = Process(target=write_to_DynamoDB, args=(data,))
-            job.start()
-            jobs.append(job)
-            count += 1
-            if count > 19:
-                for j in jobs:
-                    j.join()
-                count = 0
-                jobs =[]
-
-        for j in jobs:
-            j.join()
-        print(count)
-        if 'Data' not in record_response['Records']:
+        NextShardIterator, sleep = process_data(kinesis_client, NextShardIterator)
+        if sleep:
             time.sleep(0.21)
